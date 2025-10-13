@@ -36,6 +36,18 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fusionpact-frontend:latest
 
+      - name: Debug: Check SSH Private Key Length (lines)
+        run: echo "${{ secrets.VM_SSH_KEY }}" | wc -l
+
+      - name: Debug: Show first line of SSH Private Key
+        run: echo "${{ secrets.VM_SSH_KEY }}" | head -1
+
+      - name: Debug: Check if SSH key has passphrase (expect no output)
+        run: ssh-keygen -y -f <(echo "${{ secrets.VM_SSH_KEY }}") || echo "Key possibly has passphrase or invalid"
+
+      - name: Debug: Show SSH Client Version
+        run: ssh -V
+
       - name: Deploy to cloud VM
         uses: appleboy/ssh-action@master
         with:
