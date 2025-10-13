@@ -85,7 +85,7 @@ jobs:
 
       - name: Deploy application
         run: |
-          ssh -i ./vm_id_rsa -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'EOF'
+          ssh -i vm_id_rsa -o StrictHostKeyChecking=no yuvk@20.40.57.155 << 'EOF'
           cd /home/yuvk/fusionpact-devops-challenge
           git pull origin main
           docker compose pull
