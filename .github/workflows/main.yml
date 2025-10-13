@@ -2,7 +2,7 @@ name: CI-CD Pipeline
 
 on:
   push:
-    branches: ["feat/solution", "main"]
+    branches: ["main"]
   pull_request:
 
 jobs:
@@ -10,18 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2️⃣ Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # 3️⃣ Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # 4️⃣ Build & push backend
       - name: Build & push backend
         uses: docker/build-push-action@v5
         with:
@@ -29,6 +33,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fusionpact-backend:latest
 
+      # 5️⃣ Build & push frontend
       - name: Build & push frontend
         uses: docker/build-push-action@v5
         with:
@@ -36,48 +41,16 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fusionpact-frontend:latest
 
-      # ---------------------
-      # SSH key handling + debug
-      # ---------------------
-      - name: Prepare SSH private key file
-        run: |
-          # Write the multiline secret into a file
-          echo "${{ secrets.VM_SSH_KEY }}" > ./vm_id_rsa
-          chmod 600 ./vm_id_rsa
-          echo "Wrote key file (size in bytes): $(wc -c < ./vm_id_rsa)"
-        shell: bash
-
-      - name: Debug: Show first line of SSH Private Key
-        run: head -n 1 ./vm_id_rsa
-        shell: bash
-
-      - name: Debug: Check SSH key fingerprint (public key)
-        run: |
-          # Try to print public key from private key; this will fail if passphrase-protected
-          ssh-keygen -y -f ./vm_id_rsa > ./vm_id_rsa.pub || echo "ssh-keygen failed (key may be passphrase-protected or invalid)"
-          echo "Public key (first line):"
-          head -n 1 ./vm_id_rsa.pub || true
-        shell: bash
-
-      - name: Debug: Show SSH Client Version
-        run: ssh -V
-        shell: bash
-
-      # ---------------------
-      # Deploy using appleboy — pass key_path (safer than inline key)
-      # ---------------------
+      # 6️⃣ Deploy to cloud VM
       - name: Deploy to cloud VM
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
-          key_path: ./vm_id_rsa
-          port: ${{ secrets.VM_SSH_PORT }} # optional; remove if not needed
+          key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            cd ~/fusionpact-devops-challenge || exit 1
-            git fetch --all
-            git checkout feat/solution || git checkout -B feat/solution origin/feat/solution || true
-            git pull origin feat/solution || true
-            docker-compose pull
-            docker-compose down
-            docker-compose up -d
+            cd ~/fusionpact-devops-challenge
+            git pull origin main
+            docker compose pull
+            docker compose down
+            docker compose up -d
