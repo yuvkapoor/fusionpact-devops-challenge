@@ -29,14 +29,13 @@ jobs:
           echo "✅ Added ${{ secrets.VM_HOST }} to known hosts"
 
       - name: Test SSH connection
-        env:
-          VM_HOST: ${{ secrets.VM_HOST }}
-          VM_USER: ${{ secrets.VM_USER }}
         run: |
-          echo "$VM_SSH_KEY" > vm_id_rsa
+          echo "${{ secrets.VM_SSH_KEY }}" > vm_id_rsa
           chmod 600 vm_id_rsa
-          echo "Testing SSH connection to $VM_USER@$VM_HOST ..."
-          ssh -i vm_id_rsa -o StrictHostKeyChecking=no ${VM_USER}@${VM_HOST} "echo '✅ SSH connection successful!'"
+      
+          echo "Testing SSH connection..."
+          ssh -i vm_id_rsa -o StrictHostKeyChecking=no "${{ secrets.VM_USER }}"@"${{ secrets.VM_HOST }}" "echo '✅ SSH connection successful!'"
+
 
       - name: Deploy application
         run: |
