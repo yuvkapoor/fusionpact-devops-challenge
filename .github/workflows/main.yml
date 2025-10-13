@@ -2,7 +2,7 @@ name: CI-CD Pipeline
 
 on:
   push:
-    branches: ["main"]
+    branches: ["feat/solution", "main"]
   pull_request:
 
 jobs:
@@ -41,16 +41,36 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fusionpact-frontend:latest
 
-      # 6️⃣ Deploy to cloud VM
-      - name: Deploy to cloud VM
+      # 6️⃣ Prepare SSH private key file securely
+      - name: Prepare SSH private key file
+        shell: bash
+        run: |
+          echo "${{ secrets.VM_SSH_KEY }}" > ./vm_id_rsa
+          chmod 600 ./vm_id_rsa
+          echo "SSH key file prepared successfully."
+
+      # 7️⃣ Deploy to Cloud VM via Appleboy SSH Action
+      - name: Deploy to Cloud VM
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
+          key_path: ./vm_id_rsa
+          port: ${{ secrets.VM_SSH_PORT }} # Optional
           script: |
-            cd ~/fusionpact-devops-challenge
-            git pull origin main
+            set -e
+            cd ~/fusionpact-devops-challenge || exit 1
+            echo "Pulling latest code..."
+            git fetch --all
+            if git rev-parse --verify feat/solution >/dev/null 2>&1; then
+              git checkout feat/solution
+              git pull origin feat/solution
+            else
+              git checkout main
+              git pull origin main
+            fi
+            echo "Updating Docker containers..."
             docker compose pull
             docker compose down
             docker compose up -d
+            echo "✅ Deployment completed successfully!"
