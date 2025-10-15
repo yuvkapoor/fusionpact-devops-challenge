@@ -31,7 +31,7 @@ jobs:
       - name: Test SSH connection
         run: |
           echo "-----BEGIN OPENSSH PRIVATE KEY-----
-          
+          b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAACFwAAAAdzc2gtcn
           NhAAAAAwEAAQAAAgEAyVrfPsEFsRY6MtHRYRClScGepy/BHotaXt9yd4KXfAuvy7hvt0w8
           lcSLS4HqxAgXMGlHKuiaEXUB+gI9DZHOrz4JV3taIF3LD3AcQHMao+rRNY1OfDKLrtcHIw
           kJzMyg9lNUakxDmYw2n/y6m8j4qpe9VWyzxnmKR0fBj5rkGYWLRd01CZ2mr1zabgvvW5qS
@@ -80,12 +80,12 @@ jobs:
           oHHgyfvW6HsAAAAOZ2l0aHViLWFjdGlvbnMBAgMEBQ==
           -----END OPENSSH PRIVATE KEY-----" > vm_id_rsa
           chmod 600 vm_id_rsa
-          ssh -i vm_id_rsa -o StrictHostKeyChecking=no "echo '✅ SSH works from GitHub!'"
+          ssh -i vm_id_rsa -o StrictHostKeyChecking=no yuvk@20.40.57.155 "echo '✅ SSH works from GitHub!'"
 
 
       - name: Deploy application
         run: |
-          ssh -i vm_id_rsa -o StrictHostKeyChecking=no << 'EOF'
+          ssh -i vm_id_rsa -o StrictHostKeyChecking=no yuvk@20.40.57.155 << 'EOF'
           cd /home/yuvk/fusionpact-devops-challenge
           git pull origin main
           docker compose pull
