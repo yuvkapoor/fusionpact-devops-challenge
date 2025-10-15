@@ -88,9 +88,9 @@ jobs:
           ssh -i vm_id_rsa -o StrictHostKeyChecking=no yuvk@20.40.57.155 << 'EOF'
           cd /home/yuvk/fusionpact-devops-challenge
           git pull origin main
-          docker compose pull
-          docker compose down
-          docker compose up -d
+          docker-compose pull
+          docker-compose down
+          docker-compose up -d
           echo "🚀 Deployment completed successfully!"
           EOF
         shell: bash
