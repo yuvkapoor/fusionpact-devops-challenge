@@ -12,82 +12,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ------------------------------
+      # 1️⃣ Checkout Repository
+      # ------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ------------------------------
+      # 2️⃣ Prepare SSH Key
+      #    - Fixes newline issue for secrets
+      # ------------------------------
       - name: Prepare SSH private key file
         run: |
-          echo "${{ secrets.VM_SSH_KEY }}" > ./vm_id_rsa
+          echo "${{ secrets.VM_SSH_KEY }}" | tr -d '\r' | sed 's/\\n/\n/g' > ./vm_id_rsa
           chmod 600 ./vm_id_rsa
-          echo "✅ SSH key file created, size (bytes): $(wc -c < ./vm_id_rsa)"
+          echo "✅ SSH key restored and ready"
         shell: bash
 
+      # ------------------------------
+      # 3️⃣ Add VM to Known Hosts
+      # ------------------------------
       - name: Add VM to known hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
           echo "✅ Added ${{ secrets.VM_HOST }} to known hosts"
+        shell: bash
 
+      # ------------------------------
+      # 4️⃣ Test SSH Connection
+      # ------------------------------
       - name: Test SSH connection
         run: |
-          echo "-----BEGIN OPENSSH PRIVATE KEY-----
-          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
-          -----END OPENSSH PRIVATE KEY-----" > vm_id_rsa
-          chmod 600 vm_id_rsa
-          ssh -i vm_id_rsa -o StrictHostKeyChecking=no yuvk@20.40.57.155 "echo '✅ SSH works from GitHub!'"
+          ssh -i ./vm_id_rsa -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "echo '✅ SSH connection successful from GitHub Actions!'"
+        shell: bash
 
-
+      # ------------------------------
+      # 5️⃣ Deploy Application
+      # ------------------------------
       - name: Deploy application
         run: |
-          ssh -i vm_id_rsa -o StrictHostKeyChecking=no yuvk@20.40.57.155 << 'EOF'
+          ssh -i ./vm_id_rsa -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'EOF'
           cd /home/yuvk/fusionpact-devops-challenge
+          echo "🔄 Pulling latest code..."
           git pull origin main
+          echo "🐋 Updating Docker containers..."
           docker-compose pull
           docker-compose down
           docker-compose up -d
