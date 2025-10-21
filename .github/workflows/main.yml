@@ -53,8 +53,8 @@ jobs:
       - name: Build and Push Docker images
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend:latest ./frontend
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/backend:latest ./backend
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend:latest ./fusionpact-frontend
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/backend:latest ./fusionpact-backend
           docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
 
